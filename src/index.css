@@ -848,3 +848,114 @@ h4 {
 .tm-toast--info {
     background: var(--primary);
 }
+
+/* ── Mobile Menu Toggle ──────────────────────────────── */
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--secondary);
+}
+
+/* ── Mobile Responsiveness ───────────────────────────── */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1.25rem;
+    }
+
+    .hero {
+        padding: 4rem 0 3rem;
+    }
+
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .section {
+        padding: 3.5rem 0;
+    }
+
+    /* Header & Mobile Menu */
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .main-header nav {
+        flex-wrap: wrap;
+    }
+
+    .nav-links, .user-actions {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--glass-border);
+        margin-top: 1rem;
+    }
+
+    .nav-links.open, .user-actions.open {
+        display: flex;
+    }
+
+    .nav-links {
+        text-align: center;
+    }
+
+    /* Tables & Grids */
+    .budget-header, .budget-row, .budget-grand {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+        padding: 1rem;
+    }
+
+    .budget-header {
+        display: none;
+    }
+
+    .budget-row {
+        position: relative;
+    }
+
+    .budget-total {
+        text-align: left;
+        margin-top: 0.25rem;
+    }
+
+    .budget-grand {
+        text-align: left;
+    }
+
+    .budget-grand span:last-child {
+        text-align: left;
+    }
+
+    .day-card-header {
+        flex-wrap: wrap;
+        padding: 1rem;
+    }
+
+    .itinerary-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters {
+        flex-wrap: wrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .modal-box {
+        padding: 1.5rem;
+    }
+}
