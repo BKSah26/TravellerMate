@@ -1,40 +1,16 @@
-# ✈️ TravellerMate — Smart Itinerary Planner
+# React + Vite
 
-TravellerMate is a web-based travel planning application designed for intelligent travelers. It helps users discover destinations, plan detailed trip itineraries, and manage all their trips in one place.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-🌐 **Live Demo:** [TravellerMate](https://travellermate.netlify.app/)
+Currently, two official plugins are available:
 
----
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## 📸 Features
+## React Compiler
 
-### 🌍 Discover
-Browse and explore a curated collection of travel destinations from around the world. Get inspired with destination highlights, popular attractions, and travel tips to help you decide where to go next.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-### 🗺️ Plan a Trip
-Build smart, personalized itineraries tailored to your travel style. Organize your trip day-by-day, add activities, set timings, and get a clear overview of your entire journey — all in one place.
+## Expanding the ESLint configuration
 
-### 🧳 My Trips
-Access and manage all your planned and past trips from a single dashboard. Easily review, edit, or revisit any itinerary whenever you need it.
-
-### 🔐 User Authentication
-Create a personal account with a secure Sign Up flow and log in anytime to access your saved trips and preferences. Your travel plans are always tied to your profile and ready when you are.
-
----
-
-## 🛠️ Built With
-
-- **HTML5** — Markup and structure
-- **CSS3** — Styling and layout
-- **JavaScript** — Interactivity and logic
-
----
-
-## 👤 Author
-
-**bksah26**
-- GitHub: [@bksah26](https://github.com/bksah26)
-
----
-
-> *Designed for Intelligent Travelers. © 2026 TravellerMate*
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
