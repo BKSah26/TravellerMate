@@ -18,17 +18,19 @@ export default function Discover() {
                 </div>
             </section>
             <div className="container">
-                <div className="section-header">
+                <div className="section-header discover-section-header">
                     <div>
                         <h3 className="section-title">Trending Destinations</h3>
                         <p>Popular choices by the TravellerMate community</p>
                     </div>
-                    <div className="filters">
+                    <div className="filters discover-filters" role="tablist" aria-label="Destination categories">
                         {['all', 'nature', 'adventure', 'heritage'].map(f => (
                             <button 
                                 key={f}
                                 className={`filter-btn ${filter === f ? 'active' : ''}`} 
                                 onClick={() => setFilter(f)}
+                                type="button"
+                                aria-pressed={filter === f}
                             >
                                 {f.charAt(0).toUpperCase() + f.slice(1)}
                             </button>
