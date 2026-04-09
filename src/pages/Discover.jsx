@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import DestinationCard from '../components/DestinationCard';
-import { destinations } from '../data/mockData';
+import { homepageDestinations } from '../data/plannerData';
 
 export default function Discover() {
     const [filter, setFilter] = useState('all');
 
-    const filteredDestinations = filter === 'all' 
-        ? destinations 
-        : destinations.filter(d => d.category === filter);
+    const filteredDestinations = filter === 'all'
+        ? homepageDestinations
+        : homepageDestinations.filter((d) => d.category === filter);
 
     return (
         <section className="section" id="discover">

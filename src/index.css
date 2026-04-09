@@ -384,6 +384,104 @@ h4 {
     color: var(--text-main);
 }
 
+.planner-shell {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem;
+    border-radius: 24px;
+}
+
+.planner-input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #dbe4f0;
+    background: white;
+    font: inherit;
+}
+
+.planner-inline-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.planner-helper {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+
+.planner-error {
+    color: #b91c1c;
+}
+
+.planner-suggestions {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    right: 0;
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.65rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #dbe4f0;
+    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.14);
+    z-index: 4;
+}
+
+.planner-suggestion-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 14px;
+    border: none;
+    background: #f8fbff;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+}
+
+.planner-suggestion-item span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.planner-traveler-card {
+    padding: 1rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid #dbe4f0;
+}
+
+.planner-add-btn,
+.planner-text-btn {
+    border: none;
+    background: none;
+    color: var(--primary);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+}
+
+.planner-expense-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.planner-expense-grid div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.9rem;
+    border-radius: 14px;
+    background: #f8fbff;
+    border: 1px solid #e2e8f0;
+}
+
 
 .itinerary-result {
     margin-top: 3rem;
@@ -993,5 +1091,9 @@ h4 {
 
     .modal-box {
         padding: 1.5rem;
+    }
+
+    .planner-shell {
+        padding: 1.25rem;
     }
 }
