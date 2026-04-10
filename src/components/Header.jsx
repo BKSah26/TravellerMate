@@ -1,12 +1,33 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Storage } from '../utils/storage';
 
 export default function Header() {
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState(() => Storage.getCurrentUser());
+
+    useEffect(() => {
+        const syncUser = () => setCurrentUser(Storage.getCurrentUser());
+
+        window.addEventListener('storage', syncUser);
+        window.addEventListener('travellermate_auth_change', syncUser);
+
+        return () => {
+            window.removeEventListener('storage', syncUser);
+            window.removeEventListener('travellermate_auth_change', syncUser);
+        };
+    }, []);
 
     const toggleMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMenu = () => setIsMobileMenuOpen(false);
+
+    const handleLogout = () => {
+        Storage.logout();
+        closeMenu();
     };
 
     return (
@@ -22,13 +43,22 @@ export default function Header() {
                     {isMobileMenuOpen ? '✕' : '☰'}
                 </button>
                 <ul className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
-                    <li><Link to="/" className={location.pathname === '/' ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Discover</Link></li>
-                    <li><Link to="/planner" className={location.pathname === '/planner' ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Plan a Trip</Link></li>
-                    <li><Link to="/my-trips" className={location.pathname === '/my-trips' ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>My Trips</Link></li>
+                    <li><Link to="/" className={location.pathname === '/' ? 'active' : ''} onClick={closeMenu}>Discover</Link></li>
+                    <li><Link to="/planner" className={location.pathname === '/planner' ? 'active' : ''} onClick={closeMenu}>Plan a Trip</Link></li>
+                    <li><Link to="/my-trips" className={location.pathname === '/my-trips' ? 'active' : ''} onClick={closeMenu}>My Trips</Link></li>
                 </ul>
                 <div className={`user-actions ${isMobileMenuOpen ? 'open' : ''}`}>
-                    <button className="btn btn-secondary">Login</button>
-                    <button className="btn btn-primary">Sign Up</button>
+                    {currentUser ? (
+                        <>
+                            <span className="user-pill">Hi, {currentUser.name.split(' ')[0]}</span>
+                            <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
+                        </>
+                    ) : (
+                        <>
+                            <Link className="btn btn-secondary nav-auth-btn" to="/login" onClick={closeMenu}>Login</Link>
+                            <Link className="btn btn-primary nav-auth-btn" to="/signup" onClick={closeMenu}>Sign Up</Link>
+                        </>
+                    )}
                 </div>
             </nav>
         </header>

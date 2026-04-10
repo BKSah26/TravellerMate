@@ -1,22 +1,49 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     buildTripPlan,
+    getTripRecommendations,
     getDestinationByQuery,
     getTripDaysFromDates,
     indiaDestinationCatalog,
     searchDestinations,
-    suggestTrip,
+    travelTypeOptions,
 } from '../data/plannerData';
+import { Storage } from '../utils/storage';
 
-const createTraveler = () => ({ gender: 'Male', age: 28 });
+const createTraveler = () => ({ name: '', gender: 'Male', age: 28 });
+
+const bannerImages = [
+    'https://plus.unsplash.com/premium_vector-1718387200528-d786c6e7d820?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJhdmVsfGVufDB8fDB8fHww',
+    'https://plus.unsplash.com/premium_vector-1711979204455-4c6685665bdb?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8dHJhdmVsfGVufDB8fDB8fHww',
+    'https://images.unsplash.com/vector-1749023606343-99b05f722b4d?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dHJhdmVsfGVufDB8fDB8fHww',
+    'https://plus.unsplash.com/premium_vector-1682298683439-45f9fdbd99c6?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8dHJhdmVsfGVufDB8fDB8fHww',
+    'https://plus.unsplash.com/premium_vector-1711987478533-5aa44c500e90?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHRyYXZlbHxlbnwwfHwwfHx8MA%3D%3D',
+    'https://plus.unsplash.com/premium_vector-1711920019147-9e6bd4737e26?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHRyYXZlbHxlbnwwfHwwfHx8MA%3D%3D',
+    'https://plus.unsplash.com/premium_vector-1721291624803-50f338f7d730?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fHRyYXZlbHxlbnwwfHwwfHx8MA%3D%3D',
+    'https://plus.unsplash.com/premium_vector-1721291624826-ff0f8c06b534?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHRyYXZlbHxlbnwwfHwwfHx8MA%3D%3D',
+    'https://plus.unsplash.com/premium_vector-1711987326021-7fe5d7d400f8?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzB8fHRyYXZlbHxlbnwwfHwwfHx8MA%3D%3D',
+    'https://plus.unsplash.com/premium_vector-1682268635078-5f60337cb4a3?w=1400&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjl8fHRyYXZlbHxlbnwwfHwwfHx8MA%3D%3D',
+];
+
+const getRandomBannerImage = () => bannerImages[Math.floor(Math.random() * bannerImages.length)];
+const bookingOptions = [
+    { title: 'Book Flights', description: 'Compare airfare and flight timings on Skyscanner.', href: 'https://www.skyscanner.co.in/', emoji: '✈️' },
+    { title: 'Book Trains', description: 'Check train routes and ticket booking on IRCTC.', href: 'https://www.irctc.co.in/nget/train-search', emoji: '🚆' },
+    { title: 'Book Hotels', description: 'Browse stays and room options on Booking.com.', href: 'https://www.booking.com/', emoji: '🏨' },
+];
 
 export default function Planner() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [mode, setMode] = useState('plan');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [itinerary, setItinerary] = useState(null);
+    const [suggestedPlaces, setSuggestedPlaces] = useState([]);
+    const [bannerImage, setBannerImage] = useState(bannerImages[0]);
+    const [pendingTrip, setPendingTrip] = useState(null);
+    const [isTripSaved, setIsTripSaved] = useState(false);
     const [expandedDays, setExpandedDays] = useState({});
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [planData, setPlanData] = useState({
@@ -53,6 +80,10 @@ export default function Planner() {
 
     const resetResult = () => {
         setItinerary(null);
+        setSuggestedPlaces([]);
+        setBannerImage(bannerImages[0]);
+        setPendingTrip(null);
+        setIsTripSaved(false);
         setError(null);
         setExpandedDays({});
     };
@@ -89,9 +120,28 @@ export default function Planner() {
         setIsLoading(true);
         setError(null);
         setItinerary(null);
+        setSuggestedPlaces([]);
+        setPendingTrip(null);
+        setIsTripSaved(false);
 
         try {
             const result = handler();
+            const nextBannerImage = getRandomBannerImage();
+            const sourceData = mode === 'plan' ? planData : suggestData;
+            setBannerImage(nextBannerImage);
+            setPendingTrip({
+                destination: result.title.replace(/^\d+\s+Days in\s+/i, ''),
+                title: result.title,
+                dateRange: `${result.days[0]?.dateLabel || ''} - ${result.days[result.days.length - 1]?.dateLabel || ''}`,
+                startDate: sourceData.startDate,
+                endDate: sourceData.endDate,
+                budget: result.budgetLabel,
+                totalEstimatedCost: result.totalEstimatedCost,
+                travelerSummary: result.travelerSummary,
+                itinerarySummary: result.overview,
+                image: nextBannerImage,
+                days: result.days.length,
+            });
             setItinerary(result);
             setExpandedDays({ 1: true });
         } catch (plannerError) {
@@ -111,15 +161,66 @@ export default function Planner() {
         })
     );
 
-    const handleSuggestSubmit = runPlanner(() =>
-        suggestTrip({
-            startDate: suggestData.startDate,
-            endDate: suggestData.endDate,
-            budget: suggestData.budget,
-            travelers: suggestData.travelers,
-            travelType: suggestData.travelType,
-        })
-    );
+    const handleSuggestSubmit = (event) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        setItinerary(null);
+        setPendingTrip(null);
+        setIsTripSaved(false);
+
+        try {
+            const recommendations = getTripRecommendations({
+                startDate: suggestData.startDate,
+                endDate: suggestData.endDate,
+                travelType: suggestData.travelType,
+            });
+            setSuggestedPlaces(recommendations);
+        } catch (plannerError) {
+            setError(plannerError.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSuggestedPlaceSelect = (destinationName) => {
+        setIsLoading(true);
+        setError(null);
+        setItinerary(null);
+        setPendingTrip(null);
+        setIsTripSaved(false);
+
+        try {
+            const result = buildTripPlan({
+                destinationQuery: destinationName,
+                startDate: suggestData.startDate,
+                endDate: suggestData.endDate,
+                budget: suggestData.budget,
+                travelers: suggestData.travelers,
+            });
+            const nextBannerImage = getRandomBannerImage();
+            setBannerImage(nextBannerImage);
+            setPendingTrip({
+                destination: result.title.replace(/^\d+\s+Days in\s+/i, ''),
+                title: result.title,
+                dateRange: `${result.days[0]?.dateLabel || ''} - ${result.days[result.days.length - 1]?.dateLabel || ''}`,
+                startDate: suggestData.startDate,
+                endDate: suggestData.endDate,
+                budget: result.budgetLabel,
+                totalEstimatedCost: result.totalEstimatedCost,
+                travelerSummary: result.travelerSummary,
+                itinerarySummary: result.overview,
+                image: nextBannerImage,
+                days: result.days.length,
+            });
+            setItinerary(result);
+            setExpandedDays({ 1: true });
+        } catch (plannerError) {
+            setError(plannerError.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const toggleDay = (dayNum) => {
         setExpandedDays((current) => ({ ...current, [dayNum]: !current[dayNum] }));
@@ -130,7 +231,7 @@ export default function Planner() {
             {travelers.map((traveler, index) => (
                 <div key={`${target}-${index}`} className="planner-traveler-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
-                        <strong>Traveler {index + 1}</strong>
+                        <strong>Traveler Details</strong>
                         {travelers.length > 1 && (
                             <button type="button" className="planner-text-btn" onClick={() => removeTraveler(target, index)}>
                                 Remove
@@ -138,6 +239,17 @@ export default function Planner() {
                         )}
                     </div>
                     <div className="planner-inline-grid">
+                        <div>
+                            <label className="form-label">Name</label>
+                            <input
+                                type="text"
+                                className="planner-input"
+                                value={traveler.name}
+                                onChange={(event) => changeTraveler(target, index, 'name', event.target.value)}
+                                placeholder="Enter traveler name"
+                                required
+                            />
+                        </div>
                         <div>
                             <label className="form-label">Gender</label>
                             <select className="planner-input" value={traveler.gender} onChange={(event) => changeTraveler(target, index, 'gender', event.target.value)}>
@@ -167,14 +279,45 @@ export default function Planner() {
         </div>
     );
 
+    const itineraryTravelerNames = itinerary?.travelers?.map((traveler) => traveler.name).filter(Boolean) || [];
+    const itineraryTravelerSummary = itinerary
+        ? `${itineraryTravelerNames.length ? `${itineraryTravelerNames.join(', ')} • ` : ''}${itinerary.travelerSummary}`
+        : '';
+    const itineraryDestinationName = itinerary?.title?.replace(/^\d+\s+Days in\s+/i, '') || '';
+    const itineraryMapUrl = itineraryDestinationName
+        ? `https://www.google.com/maps?q=${encodeURIComponent(`${itineraryDestinationName}, India`)}&z=11&output=embed`
+        : '';
+
+    const handleAddToMyTrips = () => {
+        if (!pendingTrip || isTripSaved) return;
+
+        if (!Storage.getCurrentUser()) {
+            Storage.savePendingTrip(pendingTrip);
+            navigate('/login', {
+                state: {
+                    from: '/planner',
+                    message: 'Login first, and TravellerMate will save this generated itinerary to My Trips automatically.',
+                },
+            });
+            return;
+        }
+
+        const existingTrip = Storage.getTrips().find((trip) =>
+            trip.title === pendingTrip.title && trip.startDate === pendingTrip.startDate && trip.endDate === pendingTrip.endDate
+        );
+
+        if (!existingTrip) {
+            Storage.saveTrip(pendingTrip);
+        }
+
+        setIsTripSaved(true);
+    };
+
     return (
         <section className="section" id="planner">
             <div className="container">
                 <div className="section-header" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                     <h2 className="section-title">Trip Planner</h2>
-                    <p className="text-muted" style={{ maxWidth: '760px' }}>
-                        India-only itinerary engine with 50 destination knowledge packs, budget-aware routes, date-range planning, and traveler-wise trip setup.
-                    </p>
                 </div>
 
                 {!itinerary && !isLoading && !error && (
@@ -289,11 +432,9 @@ export default function Planner() {
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label className="form-label">Travel Style</label>
                                     <select className="planner-input" value={suggestData.travelType} onChange={(event) => setSuggestData((current) => ({ ...current, travelType: event.target.value }))}>
-                                        <option value="Nature">Nature</option>
-                                        <option value="Adventure">Adventure</option>
-                                        <option value="Heritage">Heritage</option>
-                                        <option value="Food">Food</option>
-                                        <option value="Relaxing">Relaxing</option>
+                                        {travelTypeOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                        ))}
                                     </select>
                                 </div>
 
@@ -307,10 +448,44 @@ export default function Planner() {
                                 </div>
 
                                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                                    Suggest a Trip
+                                    Find Matching Destinations
                                 </button>
                             </form>
                         )}
+                    </div>
+                )}
+
+                {!itinerary && !isLoading && !error && mode === 'suggest' && suggestedPlaces.length > 0 && (
+                    <div style={{ marginTop: '2rem' }}>
+                        <div className="section-header" style={{ marginBottom: '1.5rem' }}>
+                            <div>
+                                <h3 className="section-title" style={{ fontSize: '1.65rem' }}>Suggested Destinations</h3>
+                                <p>Pick any place below to generate the full day-wise itinerary.</p>
+                            </div>
+                            <p className="planner-helper">{suggestedPlaces.length} seasonal match{suggestedPlaces.length !== 1 ? 'es' : ''}</p>
+                        </div>
+                        <div className="my-trips-grid">
+                            {suggestedPlaces.map((place) => (
+                                <article key={place.slug} className="card trip-card">
+                                    <div className="my-trip-banner" style={{ backgroundImage: `url(${place.image})` }}>
+                                        <span className="my-trip-status upcoming">{place.category}</span>
+                                    </div>
+                                    <div className="card-body">
+                                        <h3 className="card-title" style={{ marginBottom: '0.35rem' }}>{place.name}</h3>
+                                        <p className="text-muted" style={{ fontSize: '0.95rem', marginBottom: '0.9rem' }}>{place.state}</p>
+                                        <p className="text-muted" style={{ fontSize: '0.95rem' }}>{place.summary}</p>
+                                        <div className="my-trip-meta">
+                                            <span><strong>Best season:</strong> {place.bestSeason}</span>
+                                            <span><strong>Ideal duration:</strong> {place.idealDays} days</span>
+                                            <span><strong>Styles:</strong> {place.styles.slice(0, 4).join(', ')}</span>
+                                        </div>
+                                        <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }} onClick={() => handleSuggestedPlaceSelect(place.name)}>
+                                            Generate Itinerary
+                                        </button>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -333,8 +508,7 @@ export default function Planner() {
 
                 {itinerary && (
                     <div className="itinerary-result">
-                        <div className="itinerary-banner">
-                            <img src={itinerary.bannerUrl} alt={itinerary.title} className="itinerary-banner-img" />
+                        <div className="itinerary-banner" style={{ backgroundImage: `url(${bannerImage})` }}>
                             <div className="itinerary-banner-overlay">
                                 <div className="itinerary-banner-content">
                                     <span className="itinerary-badge">{itinerary.budgetLabel} plan</span>
@@ -347,9 +521,14 @@ export default function Planner() {
                         <div className="itinerary-controls" style={{ justifyContent: 'space-between' }}>
                             <div>
                                 <h3 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Your Custom Plan</h3>
-                                <p className="text-muted" style={{ marginTop: '0.35rem' }}>{itinerary.travelerSummary}</p>
+                                <p className="text-muted" style={{ marginTop: '0.35rem' }}>{itineraryTravelerSummary}</p>
                             </div>
-                            <button className="btn btn-secondary" onClick={resetResult}>Create Another Plan</button>
+                            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                <button className={isTripSaved ? 'btn btn-secondary' : 'btn btn-primary'} onClick={handleAddToMyTrips} type="button">
+                                    {isTripSaved ? 'Added to My Trips' : 'Add to My Trips'}
+                                </button>
+                                <button className="btn btn-secondary" onClick={resetResult} type="button">Create Another Plan</button>
+                            </div>
                         </div>
 
                         <div className="budget-breakdown glass">
@@ -374,6 +553,40 @@ export default function Planner() {
                                     <span>Total Estimation</span>
                                     <span>{itinerary.totalEstimatedCost}</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="booking-panel glass">
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <h3 className="budget-title">Booking Shortcuts</h3>
+                                <p className="planner-helper">Continue your plan with quick booking links for flights, trains, and hotels.</p>
+                            </div>
+                            <div className="booking-grid">
+                                {bookingOptions.map((option) => (
+                                    <a key={option.title} href={option.href} target="_blank" rel="noreferrer" className="booking-card">
+                                        <span className="booking-emoji">{option.emoji}</span>
+                                        <div>
+                                            <strong>{option.title}</strong>
+                                            <p>{option.description}</p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="booking-panel glass">
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <h3 className="budget-title">Destination Map</h3>
+                                <p className="planner-helper">Quick location view for {itineraryDestinationName} on Google Maps.</p>
+                            </div>
+                            <div className="map-frame-wrap">
+                                <iframe
+                                    title={`${itineraryDestinationName} map`}
+                                    src={itineraryMapUrl}
+                                    className="map-frame"
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                />
                             </div>
                         </div>
 
